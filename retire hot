@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Can You Retire While You're Still Hot?</title>
+</head>
+<body>
+  <h1>Can You Retire While You're Still Hot?</h1>
+  <form id="retirement-form">
+    <label for="name">Name:</label>
+    <input type="text" id="name" name="name" required><br><br>
+
+    <label for="age">Current Age:</label>
+    <input type="number" id="age" name="age" required><br><br>
+
+    <label for="income">Monthly Income:</label>
+    <input type="number" id="income" name="income" required><br><br>
+
+    <label for="additionalIncome">Additional Monthly Income:</label>
+    <input type="number" id="additionalIncome" name="additionalIncome"><br><br>
+
+    <label for="benefits">Monthly Benefits (e.g., child benefit):</label>
+    <input type="number" id="benefits" name="benefits"><br><br>
+
+    <label for="rentIncome">Monthly Rental Income:</label>
+    <input type="number" id="rentIncome" name="rentIncome"><br><br>
+
+    <label for="initialInvestment">Initial Investment Amount:</label>
+    <input type="number" id="initialInvestment" name="initialInvestment" required><br><br>
+
+    <label for="annualGrowth">Annual Growth Rate (%):</label>
+    <input type="number" id="annualGrowth" name="annualGrowth" required><br><br>
+
+    <label for="dividends">Annual Dividends:</label>
+    <input type="number" id="dividends" name="dividends"><br><br>
+
+    <label for="expenses">Total Monthly Expenses:</label>
+    <input type="number" id="expenses" name="expenses" required><br><br>
+
+    <label for="retirementAge">Desired Retirement Age:</label>
+    <input type="number" id="retirementAge" name="retirementAge" required><br><br>
+
+    <label for="pension">Expected Monthly Pension at Age 65:</label>
+    <input type="number" id="pension" name="pension"><br><br>
+
+    <label for="additionalInvestment">Additional Annual Investment for Next 3 Years:</label>
+    <input type="number" id="additionalInvestment" name="additionalInvestment"><br><br>
+
+    <button type="button" onclick="calculateRetirement()">Submit</button>
+  </form>
+
+  <h2>Retirement Calculation Result:</h2>
+  <div id="result"></div>
+
+  <script>
+    function calculateRetirement() {
+      const form = document.getElementById('retirement-form');
+      const formData = new FormData(form);
+      const data = {};
+      formData.forEach((value, key) => { data[key] = parseFloat(value) || 0; });
+
+      const monthlyIncome = data.income + data.additionalIncome + data.benefits + data.rentIncome;
+      const annualIncome = monthlyIncome * 12;
+      const annualExpenses = data.expenses * 12;
+      const annualShortfall = annualExpenses - annualIncome;
+      const requiredPrincipal = annualShortfall / 0.03;
+
+      let currentInvestment = data.initialInvestment;
+      const annualGrowthRate = data.annualGrowth / 100;
+      const annualDividends = data.dividends;
+      const additionalInvestment = data.additionalInvestment;
+
+      let yearsToRetirement = data.retirementAge - data.age;
+      for (let i = 0; i < yearsToRetirement; i++) {
+        if (i < 3) {
+          currentInvestment += additionalInvestment;
+        }
+        currentInvestment = currentInvestment * (1 + annualGrowthRate) + annualDividends;
+      }
+
+      const canRetire = currentInvestment >= requiredPrincipal;
+
+      document.getElementById('result').innerHTML = `
+        <p>Required Principal: $${requiredPrincipal.toFixed(2)}</p>
+        <p>Investment Value at Retirement Age (${data.retirementAge}): $${currentInvestment.toFixed(2)}</p>
+        <p>${canRetire ? "You can retire!" : "You cannot retire yet."}</p>
+      `;
+
+      fetch("YOUR_GOOGLE_APPS_SCRIPT_URL", {
+        method: "POST",
+        body: JSON.stringify(data)
+      }).then(response => response.text())
+        .then(result => console.log(result))
+        .catch(error => console.error('Error:', error));
+    }
+  </script>
+</body>
+</html>
